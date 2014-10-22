@@ -14,7 +14,7 @@ range = [6 128 72 72 120 14 7 31000 768 24 960 960 7488 27]./2;
 mean = [5 96 44 44 100 9 4.5 16500 635 20 544 544 4256 22.5];
 
 averagedata = data - repmat(mean,333,1);
-x = bsxfun(@rdivide, averagedata, range);
+x = databsxfun(@rdivide, averagedata, range);
 x = [x y]; 
 
 
@@ -39,21 +39,14 @@ for i=1:no_buckets
     y = X(:,end);
     X = X(:,1:end-1);
     
-    %beta = inv(X'*X+10^(i+3)*eye(size(X,2)))*X'*y;
-    beta = ridge(y,X,2^-i)
-    
-    
+    beta = inv(X'*X+3^(i-1)*eye(size(X,2)))*X'*y;
     betas(i,:) = [beta];
     err = [err min(abs(V*beta(1:end-1) - Vy))];
     err2 = [err2 norm(V*beta(1:end-1) - Vy)];
     
-    
 end
 
-averagedata = validation - repmat(mean,333,1);
-normval = bsxfun(@rdivide, averagedata, range);
-
-csvwrite('validationsetresult.csv', normval*betas(5,1:end-1)');
+csvwrite('validationsetresult.csv', validation*betas(3,1:end-1)')
 
 
 plot(err);
