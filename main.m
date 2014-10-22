@@ -18,38 +18,44 @@ STD = std(training);
 averagedata = training-repmat(MEAN,size(training,1),1);
 normdata = bsxfun(@rdivide, averagedata, STD);
 
+%normdata = [normdata; normdata];
+
 X = normdata(:,1:end-1);
 y = normdata(:,end);
+X = [ones(size(X)) X X.^2 X.^5 X.^10];
 
 
 %% ridge regression
 
-lambda = 0:0.05:10;%exp(-10:1:10);
+%possible lambdas
+lambda = exp(-10:0.5:10);%0:0.1:10;%exp(-10:1:10);
+
+%kfold default=10
 kfold = 10;
 
 candidates = [];
+%iterate over all lambdas
 for k=lambda
 
     err = [];
     betas = [];
     candidate = [];
-    Xt = [ones(size(X,1),1) X];
     ind = crossvalind('Kfold', size(X,1), kfold);
    
+    % do kfold crossvalidation for each lambda
     for i = 1:kfold
-        Xts = Xt(ind == i, :);
-        Xtr = Xt(ind ~= i, :);
+        Xts = X(ind == i, :);
+        Xtr = X(ind ~= i, :);
         
+        % closed form solution -> may be replaced by gradient descent
         beta = inv(Xtr'*Xtr+k*eye(size(Xtr,2)))*Xtr'*y(ind ~= i);
         betas = [betas; beta'];
-        x = 1:size(Xts,1);
-        %plot(x, Xts*beta, x, y(ind == i));
-        %pause(0.5);
-        err = [err  norm(Xts*beta - y(ind == i))];
+        
+        %estimate current lambda's error
+        curerr = norm(Xts*beta - y(ind == i));
+        err = [err curerr ];
     end
     
-    %plot(err);
-    %hold on;
     [val,ind] = min(err);
     candidate = [val betas(ind,:)];
    
@@ -57,29 +63,32 @@ for k=lambda
     
 end
 
+%get index for lambda with lowest error
 [val, ind] = min(candidates(:,1));
-beta = candidates(ind,2:end);
 
+%calculate beta with chosen lambda
 ridgebeta = inv(X'*X+lambda(ind)*eye(size(X,2)))*X'*y;
 
+%calculate and show error for beta estimate
+ridgeerr = X*ridgebeta-y;
+norm(ridgeerr)
 
+%% test on validation set
 
-plot(1:333, X*ridgebeta, 1:333, y);
-
-% test on validation set
-
+% normalize validation data
 averagedata = validation-repmat(MEAN(1:end-1),size(validation,1),1);
 normdata = bsxfun(@rdivide, averagedata, STD(1:end-1));
 
-prediction = normdata*ridgbeta;
+%model definition
+normdata = [ones(size(normdata)) normdata normdata.^2 normdata.^5 normdata.^10];
+
+% calculate prediction and un-normalize
+prediction = normdata*ridgebeta;
 unnormpred = bsxfun(@times, prediction, STD(end));
 preddata = unnormpred+repmat(MEAN(end),size(validation,1),1);
 
+%% write to csv file for submission
 csvwrite('validationsetresult.csv', preddata);
-
-
-
-
 
 
 
