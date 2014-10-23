@@ -6,32 +6,41 @@ training = csvread('training.csv');
 validation = csvread('validation.csv');
 
 %%  normalization
+%range = [6 128 72 72 120 14 7 31000 768 24 960 960 7488 27]./2;
+%mean = [5 96 44 44 100 9 4.5 16500 635 20 544 544 4256 22.5];
+
+%averagedata = data - repmat(mean,333,1);
+%x = bsxfun(@rdivide, averagedata, range);
+%x = [x y]; 
 
 MEAN = mean(training);
 STD = std(training);
 averagedata = training-repmat(MEAN,size(training,1),1);
 normdata = bsxfun(@rdivide, averagedata, STD);
 
+%normdata = [normdata; normdata];
+
 %Features
 X = normdata(:,1:end-1);
 y = normdata(:,end);
-X= getFeatures(X);
+
+MIX = getMixedTerm(X);
+X = [ones(size(X,1),1) MIX X X.^2 X.^3];
+
 
 %% ridge regression
 
 %possible lambdas
-%lambda = exp(-1:0.1:5);
-lambda = 0.1:0.1:10;%exp(-10:1:10);
+lambda = exp(-1:0.1:5);%0:0.1:10;%exp(-10:1:10);
 
 %kfold default=10
 kfold = 10;
 
 candidates = [];
-errs=[];
 %iterate over all lambdas
 for k=lambda
 
-    err = 0;
+    err = [];
     betas = [];
     candidate = [];
     ind = crossvalind('Kfold', size(X,1), kfold);
@@ -42,21 +51,31 @@ for k=lambda
         Xtr = X(ind ~= i, :);
         
         % closed form solution -> may be replaced by gradient descent
-        beta= regression(Xtr,y(ind ~= i),k);
+        beta = inv(Xtr'*Xtr+k*eye(size(Xtr,2)))*Xtr'*y(ind ~= i);
+        %beta = getLassoBeta(Xtr,y(ind ~= i),k)
+        %beta=lasso(Xtr,y(ind ~= i),'Lambda',k);
         betas = [betas; beta'];
         
         %estimate current lambda's error
         curerr = norm(Xts*beta - y(ind == i));
-        err = err+curerr;
+        err = [err curerr ];
     end
-    errs=[errs err];
+    
+    %[val,ind] = min(err);
+    errs[            sqrt(sum(err.^2))];
+    candidate = [val betas(ind,:)];
+   
+    candidates = [candidates; candidate]; 
+    
 end
 
 %get index for lambda with lowest error
-[val,ind]=min(errs);
+[val, ind] = min(candidates(:,1));
 
 %calculate beta with chosen lambda
-ridgebeta = regression(X,y,lambda(ind));
+ridgebeta = inv(X'*X+lambda(ind)*eye(size(X,2)))*X'*y;
+%ridgebeta=lasso(X,y,'Lambda',lambda(ind));
+
 
 %calculate and show error for beta estimate
 ridgeerr = X*ridgebeta-y;
@@ -67,8 +86,9 @@ disp(['Error is ' num2str(norm(ridgeerr)) ' w Lambda ' num2str(lambda(ind))]);
 averagedata = validation-repmat(MEAN(1:end-1),size(validation,1),1);
 normdata = bsxfun(@rdivide, averagedata, STD(1:end-1));
 
+mix_norm = getMixedTerm(normdata);
 %model definition
-normdata = getFeatures(normdata);
+normdata = [ones(size(normdata,1),1) mix_norm normdata normdata.^2 normdata.^3];
 
 % calculate prediction and un-normalize
 prediction = normdata*ridgebeta;
