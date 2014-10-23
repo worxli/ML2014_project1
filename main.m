@@ -6,71 +6,58 @@ training = csvread('training.csv');
 validation = csvread('validation.csv');
 
 %%  normalization
-%range = [6 128 72 72 120 14 7 31000 768 24 960 960 7488 27]./2;
-%mean = [5 96 44 44 100 9 4.5 16500 635 20 544 544 4256 22.5];
-
-%averagedata = data - repmat(mean,333,1);
-%x = bsxfun(@rdivide, averagedata, range);
-%x = [x y]; 
-
 MEAN = mean(training);
 STD = std(training);
 averagedata = training-repmat(MEAN,size(training,1),1);
 normdata = bsxfun(@rdivide, averagedata, STD);
 
-%normdata = [normdata; normdata];
-
 X = normdata(:,1:end-1);
 y = normdata(:,end);
-X = [ones(size(X)) X X.^2 X.^5 X.^10];
+Xt = [ones(size(X,1),1) X X.^2];
 
 
 %% ridge regression
 
 %possible lambdas
-lambda = exp(-10:0.5:10);%0:0.1:10;%exp(-10:1:10);
+lambda = exp(-2:0.1:10);%0:0.1:10;%exp(-10:1:10);
 
 %kfold default=10
 kfold = 10;
 
-candidates = [];
+errs = [];
+
 %iterate over all lambdas
 for k=lambda
 
-    err = [];
-    betas = [];
-    candidate = [];
-    ind = crossvalind('Kfold', size(X,1), kfold);
+    err = 0;
+    ind = crossvalind('Kfold', size(Xt,1), kfold);
    
     % do kfold crossvalidation for each lambda
     for i = 1:kfold
-        Xts = X(ind == i, :);
-        Xtr = X(ind ~= i, :);
+        Xts = Xt(ind == i, :);
+        Xtr = Xt(ind ~= i, :);
         
         % closed form solution -> may be replaced by gradient descent
         beta = inv(Xtr'*Xtr+k*eye(size(Xtr,2)))*Xtr'*y(ind ~= i);
-        betas = [betas; beta'];
         
         %estimate current lambda's error
         curerr = norm(Xts*beta - y(ind == i));
-        err = [err curerr ];
+        err = err+curerr;
     end
     
-    [val,ind] = min(err);
-    candidate = [val betas(ind,:)];
-   
-    candidates = [candidates; candidate]; 
+    errs = [errs err];
     
 end
 
 %get index for lambda with lowest error
-[val, ind] = min(candidates(:,1));
+[val, ind] = min(errs);
+disp(['Cumulative prediction error for lambda ' num2str(lambda(ind)) ' is: ' num2str(val)]);
 
 %calculate beta with chosen lambda
-ridgebeta = inv(X'*X+lambda(ind)*eye(size(X,2)))*X'*y;
+ridgebeta = inv(Xt'*Xt+lambda(ind)*eye(size(Xt,2)))*Xt'*y;
 
 %calculate and show error for beta estimate
-ridgeerr = X*ridgebeta-y;
+ridgeerr = Xt*ridgebeta-y;
 norm(ridgeerr)
 
 %% test on validation set
@@ -80,7 +67,7 @@ averagedata = validation-repmat(MEAN(1:end-1),size(validation,1),1);
 normdata = bsxfun(@rdivide, averagedata, STD(1:end-1));
 
 %model definition
-normdata = [ones(size(normdata)) normdata normdata.^2 normdata.^5 normdata.^10];
+normdata = [ones(size(normdata,1),1) normdata normdata.^2];
 
 % calculate prediction and un-normalize
 prediction = normdata*ridgebeta;
