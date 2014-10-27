@@ -6,6 +6,7 @@ training = csvread('training.csv');
 validation = csvread('validation.csv');
 
 %%  normalization
+
 MEAN = mean(training);
 STD = std(training);
 averagedata = training-repmat(MEAN,size(training,1),1);
@@ -13,13 +14,12 @@ normdata = bsxfun(@rdivide, averagedata, STD);
 
 X = normdata(:,1:end-1);
 y = normdata(:,end);
-Xt = [ones(size(X,1),1) X X.^2];
-
+Xt = [ones(size(X,1),1) sqrt(X) X.^2 X.^3];
 
 %% ridge regression
 
 %possible lambdas
-lambda = exp(-2:0.1:10);%0:0.1:10;%exp(-10:1:10);
+lambda = 0.25:0.25:30;
 
 %kfold default=10
 kfold = 10;
@@ -49,6 +49,8 @@ for k=lambda
     
 end
 
+plot(lambda,errs);
+
 %get index for lambda with lowest error
 [val, ind] = min(errs);
 disp(['Cumulative prediction error for lambda ' num2str(lambda(ind)) ' is: ' num2str(val)]);
@@ -58,7 +60,7 @@ ridgebeta = inv(Xt'*Xt+lambda(ind)*eye(size(Xt,2)))*Xt'*y;
 
 %calculate and show error for beta estimate
 ridgeerr = Xt*ridgebeta-y;
-norm(ridgeerr)
+disp(['Error on training data: ' num2str(norm(ridgeerr)) ]);
 
 %% test on validation set
 
@@ -67,7 +69,7 @@ averagedata = validation-repmat(MEAN(1:end-1),size(validation,1),1);
 normdata = bsxfun(@rdivide, averagedata, STD(1:end-1));
 
 %model definition
-normdata = [ones(size(normdata,1),1) normdata normdata.^2];
+normdata = [ones(size(normdata,1),1) normdata normdata.^2 normdata.^3];
 
 % calculate prediction and un-normalize
 prediction = normdata*ridgebeta;
