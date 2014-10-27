@@ -21,7 +21,7 @@ Xt = getFeatures(X);
 
 %possible lambdas
 %lambda = exp(-1:0.1:5);
-lambda = 0.1:0.2:20;
+lambda = 0.1:0.1:10;%exp(-10:1:10);
 
 %kfold default=10
 kfold = 10;
@@ -56,12 +56,22 @@ plot(lambda,errs);
 disp(['Cumulative prediction error for lambda ' num2str(lambda(ind)) ' is: ' num2str(val)]);
 
 %calculate beta with chosen lambda
-ridgebeta = regression(Xt,y,lambda(ind));
+ridgebeta = regression(X,y,lambda(ind));
 
 %calculate and show error for beta estimate
 ridgeerr = Xt*ridgebeta-y;
 disp(['Error on training data: ' num2str(norm(ridgeerr)) ]);
 
+=======
+[val,ind]=min(errs);
+
+%calculate beta with chosen lambda
+ridgebeta = regression(X,y,lambda(ind));
+
+%calculate and show error for beta estimate
+ridgeerr = X*ridgebeta-y;
+disp(['Error is ' num2str(norm(ridgeerr)) ' w Lambda ' num2str(lambda(ind))]);
+>>>>>>> a6b453f1191d8b313e2d09a87c9ca0a70a882b5c
 %% test on validation set
 
 % normalize validation data
@@ -69,7 +79,11 @@ averagedata = validation-repmat(MEAN(1:end-1),size(validation,1),1);
 normdata = bsxfun(@rdivide, averagedata, STD(1:end-1));
 
 %model definition
+<<<<<<< HEAD
+normdata = [ones(size(normdata,1),1) normdata normdata.^2 normdata.^3];
+=======
 normdata = getFeatures(normdata);
+>>>>>>> a6b453f1191d8b313e2d09a87c9ca0a70a882b5c
 
 % calculate prediction and un-normalize
 prediction = normdata*ridgebeta;
