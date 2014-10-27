@@ -53,7 +53,7 @@ plot(lambda,errs);
 
 %get index for lambda with lowest error
 [val, ind] = min(errs);
-disp(['Cumulative prediction error for lambda ' num2str(lambda(ind)) ' is: ' num2str(val)]);
+disp(['Prediction error for lambda ' num2str(lambda(ind)) ' is: ' num2str(val) ' (chosen lambda), MODEL ERROR: ' num2str(sum(errs))]);
 
 %calculate beta with chosen lambda
 ridgebeta = regression(Xt,y,lambda(ind));
