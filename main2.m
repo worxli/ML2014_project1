@@ -32,37 +32,40 @@ maxNumFeatures = 5;
 
 selectedFeatures = [];
 
-% Loop over feature until enough found
-
+% Loop over feature space until enough found
 while length(selectedFeatures) < maxNumFeatures
     
     featureErrors = [];
     
-    % Iterate over feature space for feature selection
+    % For each feature compute the error for a random for a certain labmda
     for featIdx=1:size(Xt,2)
 
+        % For all lambdas compute crossvalidation
         [errs, index] = crossValidation(Xt, y, lambda, kfold);
         
+        % Store all errors for one feature
         featureErrors = [featureErrors min(errs)];
+        
     end
 
+    % Choose the feature with the smallest error
     [minFeatureError, idx] = min(featureErrors);
 
+    % Store index of the selected feature
     selectedFeatures = [selectedFeatures idx];
 
 end
 
+% TODO: Xt(:,selectedFeatures) Run cross validation with all features
+% And find best lambda
 [errs, index] = crossValidation(Xt(:,selectedFeatures),y,lambda,kfold);
 
+% Plot lambda error for the final selected feature set
 plot(lambda,errs);
 
 %get index for lambda with lowest error
 [val, ind] = min(errs);
 disp(['Prediction error for lambda ' num2str(lambda(ind)) ' is: ' num2str(val) ' (chosen lambda), MODEL ERROR: ' num2str(sum(errs))]);
-
-% TODO 
-
-% FIND RIDGEBETA WITH SELECTED FEATURES
 
 %calculate beta with chosen lambda
 ridgebeta = regression(Xt,y,lambda(ind));
