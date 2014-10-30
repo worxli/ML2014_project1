@@ -6,6 +6,16 @@ training = csvread('training.csv');
 validation = csvread('validation.csv');
 
 %%  normalization
+
+MEAN = mean(training);
+STD = std(training);
+
+for i=1:size(training,1)
+    for j=1:size(training,2)
+        if training(i,j)-mean(j) > 1.5*STD(j)
+    end
+end
+
 MEAN = mean(training);
 STD = std(training);
 
