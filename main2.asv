@@ -9,16 +9,6 @@ validation = csvread('validation.csv');
 
 MEAN = mean(training);
 STD = std(training);
-
-for i=1:size(training,1)
-    for j=1:size(training,2)
-        if training(i,j)-mean(j) > 1.5*STD(j)
-    end
-end
-
-MEAN = mean(training);
-STD = std(training);
-
 averagedata = training-repmat(MEAN,size(training,1),1);
 normdata = bsxfun(@rdivide, averagedata, STD);
 
@@ -26,6 +16,8 @@ normdata = bsxfun(@rdivide, averagedata, STD);
 X = normdata(:,1:end-1);
 y = normdata(:,end);
 Xt = getFeatures(X);
+
+%% Maybe use sequentials
 
 %% ridge regression
 
@@ -36,37 +28,65 @@ lambda = 0.1:0.2:20;
 %kfold default=10
 kfold = 10;
 
-%iterate over all lambdas
+%maxNumFeatures = 5;
+
+%selectedFeatures = [];
+% 
+% % Loop over feature until enough found
+% 
+% while length(selectedFeatures) < maxNumFeatures
+%     
+%     featureErrors = [];
+%     
+%     % Iterate over feature space for feature selection
+%     for featIdx=1:size(Xt,2)
+% 
+%         [errs, index] = crossValidation(Xt, y, lambda, kfold);
+%         
+%         featureErrors = [featureErrors min(errs)];
+%     end
+% 
+%     [minFeatureError, idx] = min(featureErrors);
+% 
+%     selectedFeatures = [selectedFeatures idx];
+% 
+% end
+
+featurevec = 1:size(Xt,2);
 errs = [];
-for k=lambda
-
-    err = 0;
-    ind = crossvalind('Kfold', size(Xt,1), kfold);
+indices = [];
+featuresvec = [];
+for i = 2:size(Xt,2)
    
-    % do kfold crossvalidation for each lambda
-    for i = 1:kfold
-        Xts = Xt(ind == i, :);
-        Xtr = Xt(ind ~= i, :);
-        
-        % closed form solution -> may be replaced by gradient descent
-        beta = regression(Xtr,y(ind ~= i),k);
-        
-        %estimate current lambda's error
-        curerr = norm(Xts*beta - y(ind == i));
-        err = err+curerr;
+    features = nchoosek(featurevec,i);
+    if size(features,1)>1
+        for j = 1:size(features,1)
+            [err, index] = crossValidation(Xt(:,features(j,:)),y,lambda,kfold);
+            errs = [errs err];
+            indices = [indices index];
+            emptyvec = zeros(size(X,1);
+            emptyvec(1:length(features(j,:))) = features(j,:);
+            featuresvec = [featuresvec emptyvec];
+        end
+    else
+        [err, index] = crossValidation(Xt(:,features),y,lambda,kfold); 
+        errs = [errs err];
+        indices = [indices index];
+        featuresvec = [featuresvec; features];
     end
-
-    errs = [errs err];
+    
 end
 
-plot(lambda,errs);
+return
+
+plot(errs);
 
 %get index for lambda with lowest error
 [val, ind] = min(errs);
 disp(['Prediction error for lambda ' num2str(lambda(ind)) ' is: ' num2str(val) ' (chosen lambda), MODEL ERROR: ' num2str(sum(errs))]);
 
 %calculate beta with chosen lambda
-ridgebeta = regression(Xt,y,lambda(ind));
+ridgebeta = regression(Xt(:,selectedFeatures),y,lambda(ind));
 
 %calculate and show error for beta estimate
 ridgeerr = Xt*ridgebeta-y;
@@ -80,6 +100,7 @@ normdata = bsxfun(@rdivide, averagedata, STD(1:end-1));
 
 %model definition
 normdata = getFeatures(normdata);
+normdata = normdata(:, selectedFeatures);
 
 % calculate prediction and un-normalize
 prediction = normdata*ridgebeta;

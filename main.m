@@ -2,7 +2,7 @@ clear;
 
 %% read data
 training = csvread('training.csv');
-%testdata = csvread('testing.csv');
+testdata = csvread('testing.csv');
 validation = csvread('validation.csv');
 
 %%  normalization
@@ -21,7 +21,7 @@ Xt = getFeatures(X);
 
 %possible lambdas
 %lambda = exp(-1:0.1:5);
-lambda = 0.1:0.2:20;
+lambda = 0.1:0.1:20;
 
 %kfold default=10
 kfold = 10;
@@ -78,6 +78,23 @@ preddata = unnormpred+repmat(MEAN(end),size(validation,1),1);
 
 %% write to csv file for submission
 csvwrite('validationsetresult.csv', preddata);
+
+%% test on test set
+
+% normalize validation data
+averagedata = testdata-repmat(MEAN(1:end-1),size(testdata,1),1);
+normdata = bsxfun(@rdivide, averagedata, STD(1:end-1));
+
+%model definition
+normdata = getFeatures(normdata);
+
+% calculate prediction and un-normalize
+prediction = normdata*ridgebeta;
+unnormpred = bsxfun(@times, prediction, STD(end));
+preddata = unnormpred+repmat(MEAN(end),size(testdata,1),1);
+
+%% write to csv file for submission
+csvwrite('testsetresult.csv', preddata);
 
 
 

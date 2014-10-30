@@ -31,6 +31,7 @@ sections to explain your methodology. Feel free to add graphs or screenshots if 
 necessary. The report should contain a maximum of 2 pages.
 
 \section{Tools}
+We used Matlab for our project. 
 Matlab
 
 %Which tools and libraries have you used (e.g. Matlab, Python with scikit-learn, Java with Weka,
@@ -39,8 +40,11 @@ Matlab
 %command-line or GUI-tools describe what you did.
 
 \section{Algorithm}
-ridge regression
-%Describe the algorithm you used for regression (e.g. ordinary least squares, ridge regression, $\ldots$)
+We tried different algorithms, but we stuck with ridge regression in its closed form. In our opinion it performed better than the ordinary least squares as well as the lasso algorithm.
+So basically we solved the equation 
+\begin{math}
+\beta = (X'*X+\lambda*I)^{-1}*X'*y
+\end{math}
 
 \section{Features}
 Did you construct any new features? What feature transforms did you use?
