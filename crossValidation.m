@@ -1,4 +1,4 @@
-function [ errs, idx ] = crossValidation( Xt, y, lambdas, kfold )
+function [ val, ind ] = crossValidation( Xt, y, lambdas, kfold )
 
 errs = [];
  
@@ -18,17 +18,13 @@ for k=lambdas
 
         %estimate current lambda's error
         curerr = norm(Xts*beta - y(ind == i));
-        err = err + curerr^2;
+        err = err + curerr;
     end
 
-    errs = [errs sqrt(err)];
+    errs = [errs err];
 end
 
-%plot(lambda,errs);
-
 [val, ind] = min(errs);
-
-idx = ind;
 
 end
 

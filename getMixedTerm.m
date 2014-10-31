@@ -1,4 +1,5 @@
 function [ MIX ] = getMixedTerm( X)
+
 MIX = [];
 for i=1:14
    for j=i:14

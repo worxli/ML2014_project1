@@ -30,7 +30,7 @@ disp(['Size of feature space: ' num2str(size(Xt,2))]);
 
 %possible lambdas
 %lambda = exp(-1:0.1:5);
-lambda = 0.1:0.2:20;
+lambda = 1:1:20;
 
 %kfold default=10
 kfold = 10;
@@ -93,10 +93,10 @@ plot(lambda,errs);
 disp(['Prediction error for lambda ' num2str(lambda(ind)) ' is: ' num2str(val) ' (chosen lambda), MODEL ERROR: ' num2str(sum(errs))]);
 
 %calculate beta with chosen lambda
-ridgebeta = regression(Xt,y,lambda(ind));
+ridgebeta = regression(Xt(:,selectedFeatures),y,lambda(ind));
 
 %calculate and show error for beta estimate
-ridgeerr = Xt*ridgebeta-y;
+ridgeerr = Xt(:,selectedFeatures)*ridgebeta-y;
 disp(['Error on training data: ' num2str(norm(ridgeerr)) ]);
 
 %% test on validation set
@@ -107,7 +107,7 @@ normdata = bsxfun(@rdivide, averagedata, STD(1:end-1));
 
 %model definition
 normdata = getFeatures(normdata);
-%normdata = normdata(:, Bidx);
+normdata = normdata(:, selectedFeatures);
 
 % calculate prediction and un-normalize
 prediction = normdata*ridgebeta;
