@@ -20,7 +20,7 @@ normdata = bsxfun(@rdivide, averagedata, STD);
 X = normdata(:,1:end-1);
 y = normdata(:,end);
 Xt = getFeatures(X);
-disp(['Size of feature space: ' num2str(size(Xt,2))]);
+disp(['Size of feature space: ' numto size(Xt,2)]);
 
 %% Maybe use sequentialfs
 % Select good features with lasso
