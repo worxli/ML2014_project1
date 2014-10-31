@@ -36,9 +36,8 @@ sections to explain your methodology. Feel free to add graphs or screenshots if 
 necessary. The report should contain a maximum of 2 pages.
 
 \section{Tools}
-We used Matlab for our project. 
 
-TODO: Andrin
+For this exercise we used mainly Matlab. All the statistic computation was performed with Matlab. However, some analysis (scatter plots) was done with VisuLab. The main libraries we used will be found in the Bioinformatics toolbox.
 
 %Which tools and libraries have you used (e.g. Matlab, Python with scikit-learn, Java with Weka,
 %SPSS, language x with library y, $\ldots$). If you have source-code (Matlab scripts, Python scripts, Java source folder, \dots),
@@ -46,14 +45,20 @@ TODO: Andrin
 %command-line or GUI-tools describe what you did.
 
 \section{Algorithm}
+
 We tried different algorithms, but we stuck with ridge regression in its closed form. In our opinion it performed better than the ordinary least squares as well as the lasso algorithm.
-So basically we solved the equation 
+So basically we solved the equation:
 \begin{math}
 \beta = (X'*X+\lambda*I)^{-1}*X'*y
 \end{math}
 
+Tuning lambda had a relevant impact on the final result and was a challenging task.
+
 \section{Features}
-Did you construct any new features? What feature transforms did you use? TODO: Andrin
+
+We did a lot of fine tuning with feature selection and generation for optimizing our result. To generate some basic features we used the provided function: \texttt{Matlab.x2fx} with the \texttt{'quadratic'} parameter. But we extended our features space with much more non-linear dependencies, where also single features interfere with each other.
+
+To improve the result we did not use all features from the features space but selected the best ones. For finding the best features we used a straight forward approach, where we iterated over the features space and computed the ridge regression for each feature. The ones with minimal error were kept and the others discarded. Important to note is that as soon a feature was selected was never removed from the selected feature space.
 
 \section{Parameters}
 %How did you find the parameters of your model? (What parameters have you searched over, cross validation procedure, $\ldots$)
