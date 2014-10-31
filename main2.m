@@ -17,7 +17,9 @@ X = normdata(:,1:end-1);
 y = normdata(:,end);
 Xt = getFeatures(X);
 
-%% Maybe use sequentials
+%% Maybe use sequentialfs
+% Select good features with lasso
+%[B, FitInfo] = lasso(Xt, y, 'CV', 10);
 
 %% ridge regression
 
@@ -28,37 +30,57 @@ lambda = 0.1:0.2:20;
 %kfold default=10
 kfold = 10;
 
-maxNumFeatures = 5;
-
 selectedFeatures = [];
 
+oldError = 99999;
+newError = 9999;
 % Loop over feature space until enough found
-while length(selectedFeatures) < maxNumFeatures
+while ((newError < oldError) || length(selectedFeatures) >= size(Xt,2))
+    
+    oldError = newError
     
     featureErrors = [];
     
     % For each feature compute the error for a random for a certain labmda
     for featIdx=1:size(Xt,2)
 
-        % For all lambdas compute crossvalidation
-        [errs, index] = crossValidation(Xt, y, lambda, kfold);
+        % Only check new feature that is not already in selected features
+        if (any(selectedFeatures == featIdx) == 0)
+       
+            % For all lambdas compute crossvalidation
+            [errs, index] = crossValidation(Xt(:,[selectedFeatures featIdx]), y, lambda, kfold);
+            
+            % Store all errors for one feature
+            featureErrors = [featureErrors min(errs)];
+            
+        else
+            
+            featureErrors = [featureErrors 999999];
         
-        % Store all errors for one feature
-        featureErrors = [featureErrors min(errs)];
+        end
         
     end
 
     % Choose the feature with the smallest error
     [minFeatureError, idx] = min(featureErrors);
 
+    newError = minFeatureError;
+
+    minFeatureError
+    
     % Store index of the selected feature
     selectedFeatures = [selectedFeatures idx];
+    
+    selectedFeatures
 
 end
 
 % TODO: Xt(:,selectedFeatures) Run cross validation with all features
 % And find best lambda
 [errs, index] = crossValidation(Xt(:,selectedFeatures),y,lambda,kfold);
+
+% All features selected:
+% 226 15 28 229 231 260 243 267 112 42 115 5 78 227 53 2 51 103 20 275 32
 
 % Plot lambda error for the final selected feature set
 plot(lambda,errs);
@@ -82,7 +104,7 @@ normdata = bsxfun(@rdivide, averagedata, STD(1:end-1));
 
 %model definition
 normdata = getFeatures(normdata);
-normdata = normdata(:, Bidx);
+%normdata = normdata(:, Bidx);
 
 % calculate prediction and un-normalize
 prediction = normdata*ridgebeta;
