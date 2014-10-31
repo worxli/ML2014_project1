@@ -28,12 +28,10 @@
 
 \section*{Experimental Protocol}
 
-TODO: Luki
-
-Suppose that someone wants to reproduce your results. Briefly describe the steps used to obtain the
-predictions starting from the raw data set downloaded from the project website. Use the following
-sections to explain your methodology. Feel free to add graphs or screenshots if you think it's
-necessary. The report should contain a maximum of 2 pages.
+%Suppose that someone wants to reproduce your results. Briefly describe the steps used to obtain the
+%predictions starting from the raw data set downloaded from the project website. Use the following
+%sections to explain your methodology. Feel free to add graphs or screenshots if you think it's
+%necessary. The report should contain a maximum of 2 pages.
 
 \section{Tools}
 
@@ -48,9 +46,9 @@ For this exercise we used mainly Matlab. All the statistic computation was perfo
 
 We tried different algorithms, but we stuck with ridge regression in its closed form. In our opinion it performed better than the ordinary least squares as well as the lasso algorithm.
 So basically we solved the equation:
-\begin{math}
+\begin{equation}
 \beta = (X'*X+\lambda*I)^{-1}*X'*y
-\end{math}
+\end{equation}
 
 Tuning lambda had a relevant impact on the final result and was a challenging task.
 
@@ -58,13 +56,13 @@ Tuning lambda had a relevant impact on the final result and was a challenging ta
 
 We did a lot of fine tuning with feature selection and generation for optimizing our result. To generate some basic features we used the provided function: \texttt{Matlab.x2fx} with the \texttt{'quadratic'} parameter. But we extended our features space with much more non-linear dependencies, where also single features interfere with each other.
 
-To improve the result we did not use all features from the features space but selected the best ones. For finding the best features we used a straight forward approach, where we iterated over the features space and computed the ridge regression for each feature. The ones with minimal error were kept and the others discarded. Important to note is that as soon a feature was selected was never removed from the selected feature space.
+To improve the result we did not use all features from the features space but selected the best ones. For finding the best features we used a straight forward approach, where we iterated over the features space and computed the ridge regression for each feature. The ones with minimal error were kept and the others discarded. Important to note is that as soon a feature was selected it was never removed from the selected feature space.
+
 
 \section{Parameters}
 %How did you find the parameters of your model? (What parameters have you searched over, cross validation procedure, $\ldots$)
 
-Vital for feature selection and parametritation is the normalization of the feature vectors. The domain of every dimension of the features have to be dimensionless and normalized 
-to ensure a balanced weighting. The parameters used here were the mean distribution of the training data t.m. mean feature $f_{avg}$ and standard deviation $\sigma_{avg}$ to $f_{avg}$. We normalize the training set by subtracting $f_{avg}$ from all points and diveding by $\sigma_{avg}$. This is done with the following code:
+Vital for feature selection and parametrization is the normalization of the feature vectors. The domain of every dimension of the features have to be dimensionless and normalized to ensure a balanced weighting. The parameters used here were the mean distribution of the training data t.m. mean feature $f_{avg}$ and standard deviation $\sigma_{avg}$ to $f_{avg}$. We normalize the training set by subtracting $f_{avg}$ from all points and dividing by $\sigma_{avg}$. This is done with the following code:
 
 \begin{lstlisting}frame=single]
 
@@ -74,7 +72,6 @@ averagedata = training-repmat(MEAN,size(training,1),1);
 normdata = bsxfun(@rdivide, averagedata, STD);
 \end{lstlisting}
 
-TODO: Hans
 
 \section{Lessons Learned} What other algorithms, tools or methods did you try out that didn't work well?
 Why do you think they performed worse than what you used for your final submission?
