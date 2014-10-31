@@ -24,8 +24,6 @@ for k=lambdas
     errs = [errs err];
 end
 
-%plot(lambda,errs);
-
 [val, ind] = min(errs);
 
 end

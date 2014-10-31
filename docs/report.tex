@@ -1,6 +1,7 @@
 \documentclass[a4paper, 11pt]{article}
 \usepackage{graphicx}
 \usepackage{amsmath}
+\usepackage{listings}
 \usepackage[pdftex]{hyperref}
 
 % Lengths and indenting
@@ -22,9 +23,13 @@
 \date{\today}
 
 \begin{document}
+\lstset{language=Matlab} 
 \maketitle
 
 \section*{Experimental Protocol}
+
+TODO: Luki
+
 Suppose that someone wants to reproduce your results. Briefly describe the steps used to obtain the
 predictions starting from the raw data set downloaded from the project website. Use the following
 sections to explain your methodology. Feel free to add graphs or screenshots if you think it's
@@ -32,7 +37,8 @@ necessary. The report should contain a maximum of 2 pages.
 
 \section{Tools}
 We used Matlab for our project. 
-Matlab
+
+TODO: Andrin
 
 %Which tools and libraries have you used (e.g. Matlab, Python with scikit-learn, Java with Weka,
 %SPSS, language x with library y, $\ldots$). If you have source-code (Matlab scripts, Python scripts, Java source folder, \dots),
@@ -47,12 +53,27 @@ So basically we solved the equation
 \end{math}
 
 \section{Features}
-Did you construct any new features? What feature transforms did you use?
+Did you construct any new features? What feature transforms did you use? TODO: Andrin
 
 \section{Parameters}
-How did you find the parameters of your model? (What parameters have you searched over, cross validation procedure, $\ldots$)
+%How did you find the parameters of your model? (What parameters have you searched over, cross validation procedure, $\ldots$)
+
+Vital for feature selection and parametritation is the normalization of the feature vectors. The domain of every dimension of the features have to be dimensionless and normalized 
+to ensure a balanced weighting. The parameters used here were the mean distribution of the training data t.m. mean feature $f_{avg}$ and standard deviation $\sigma_{avg}$ to $f_{avg}$. We normalize the training set by subtracting $f_{avg}$ from all points and diveding by $\sigma_{avg}$. This is done with the following code:
+
+\begin{lstlisting}frame=single]
+
+MEAN = mean(training);
+STD = std(training);
+averagedata = training-repmat(MEAN,size(training,1),1);
+normdata = bsxfun(@rdivide, averagedata, STD);
+\end{lstlisting}
+
+TODO: Hans
 
 \section{Lessons Learned} What other algorithms, tools or methods did you try out that didn't work well?
 Why do you think they performed worse than what you used for your final submission?
+
+TODO: HAns
 
 \end{document}

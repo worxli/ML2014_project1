@@ -26,53 +26,51 @@ Xt = getFeatures(X);
 lambda = 1:1:10;
 
 %kfold default=10
-kfold = 10;
+kfold = 5;
 
-maxNumFeatures = 5;
-
-selectedFeatures = [];
-
-% Loop over feature space until enough found
-while length(selectedFeatures) < maxNumFeatures
-    
-    featureErrors = [];
-    
-    % For each feature compute the error for a random for a certain labmda
-    for featIdx=1:size(Xt,2)
-
-        % For all lambdas compute crossvalidation
-        [errs, index] = crossValidation(Xt, y, lambda, kfold);
-        
-        % Store all errors for one feature
-        featureErrors = [featureErrors min(errs)];
-        
+featurevec = 1:size(Xt,2);
+errs = [];
+indices = [];
+featuresvec = [];
+for i = 2:size(Xt,2)
+   
+    features = nchoosek(featurevec,i);
+    if size(features,2)>1
+        for j = 1:size(features,1)
+            [err, index] = crossValidation(Xt(:,features(j,:)),y,lambda,kfold);
+            errs = [errs err];
+            indices = [indices index];
+            emptyvec = zeros(length(featurevec) ,1);
+            emptyvec(1:length(features(j,:))) = features(j,:);
+            featuresvec = [featuresvec; emptyvec'];
+        end
+    else
+        [err, index] = crossValidation(Xt(:,features),y,lambda,kfold); 
+        errs = [errs err];
+        indices = [indices index];
+        emptyvec = zeros(length(featurevec) ,1);
+        emptyvec(1:length(features)) = features;
+        featuresvec = [featuresvec; emptyvec'];
     end
-
-    % Choose the feature with the smallest error
-    [minFeatureError, idx] = min(featureErrors);
-
-    % Store index of the selected feature
-    selectedFeatures = [selectedFeatures idx];
-
+    
 end
 
-% TODO: Xt(:,selectedFeatures) Run cross validation with all features
-% And find best lambda
-[errs, index] = crossValidation(Xt(:,selectedFeatures),y,lambda,kfold);
-
-% Plot lambda error for the final selected feature set
-plot(lambda,errs);
+plot(errs);
 
 %get index for lambda with lowest error
 [val, ind] = min(errs);
+lambda = 
 disp(['Prediction error for lambda ' num2str(lambda(ind)) ' is: ' num2str(val) ' (chosen lambda), MODEL ERROR: ' num2str(sum(errs))]);
+
+selectedFeatures = featuresvec(ind,:)
+selectedFeatures(selectedFeatures==0) = [];
 
 %calculate beta with chosen lambda
 ridgebeta = regression(Xt(:,selectedFeatures),y,lambda(ind));
 
 %calculate and show error for beta estimate
-ridgeerr = Xt*ridgebeta-y;
-disp(['Error on training data: ' num2str(norm(ridgeerr)) ]);
+ridgeerr = Xt(:,selectedFeatures)*ridgebeta-y;
+disp(['Error on training data: ' num2str(norm(ridgeerr))]);
 
 %% test on validation set
 

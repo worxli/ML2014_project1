@@ -9,12 +9,13 @@ function [ F ] = getFeatures(X)
     %F = [ones(size(X,1),1) abs(log(X))];
 
     
-    %F = x2fx(X, 'linear');
+    F = x2fx(X, 'quadratic');
     %F = [F ones(size(X,1),1) abs(log(X))];
     
     %F = [F MIX X.^3 X.^4 abs(log(X)) 1./X abs(sqrt(X)) X.^-2];
    % F = [ones(size(X,1),1) X(:,14) X(:,14).^2 X X.^2 X.^3 X.^4];
    
    %F = [ones(size(X,1),1) X X.^2 X.^3 X.^4 X.^5 abs(sqrt(X)) abs(log(X)) 1./X];
-   F = [ones(size(X,1),1) X(:,1:3)];
+   F = [ones(size(X,1),1) F abs(sqrt(X)) abs(log(X)) 1./X];
+   F = X(:,1:5);
 end
