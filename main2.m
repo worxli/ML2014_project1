@@ -2,7 +2,7 @@ clear;
 
 %% read data
 training = csvread('training.csv');
-%testdata = csvread('testing.csv');
+testdata = csvread('testing.csv');
 validation = csvread('validation.csv');
 
 %%  normalization
@@ -30,7 +30,7 @@ disp(['Size of feature space: ' num2str(size(Xt,2))]);
 
 %possible lambdas
 %lambda = exp(-1:0.1:5);
-lambda = 1:1:20;
+lambda = 0.001:0.001:0.02;
 
 %kfold default=10
 kfold = 10;
@@ -40,7 +40,7 @@ selectedFeatures = [];
 oldError = 99999;
 newError = 9999;
 % Loop over feature space until enough found
-while ((newError < oldError) || length(selectedFeatures) >= size(Xt,2))
+while ((newError < oldError) && length(selectedFeatures) <= size(X,2))
     
     oldError = newError
     
@@ -74,9 +74,9 @@ while ((newError < oldError) || length(selectedFeatures) >= size(Xt,2))
     % Store index of the selected feature
     selectedFeatures = [selectedFeatures idx];
     
-    selectedFeatures
-
 end
+
+selectedFeatures
 
 % TODO: Xt(:,selectedFeatures) Run cross validation with all features
 % And find best lambda
@@ -118,8 +118,20 @@ preddata = unnormpred+repmat(MEAN(end),size(validation,1),1);
 csvwrite('validationsetresult.csv', preddata);
 
 
+%% test on test set
 
+% normalize test data
+averagedata = testdata-repmat(MEAN(1:end-1),size(testdata,1),1);
+normdata = bsxfun(@rdivide, averagedata, STD(1:end-1));
 
+%model definition
+normdata = getFeatures(normdata);
+normdata = normdata(:, selectedFeatures);
 
+% calculate prediction and un-normalize
+prediction = normdata*ridgebeta;
+unnormpred = bsxfun(@times, prediction, STD(end));
+preddata = unnormpred+repmat(MEAN(end),size(testdata,1),1);
 
-
+%% write to csv file for submission
+csvwrite('testsetresult.csv', preddata);
