@@ -73,9 +73,10 @@ normdata = bsxfun(@rdivide, averagedata, STD);
 \end{lstlisting}
 
 
-\section{Lessons Learned} What other algorithms, tools or methods did you try out that didn't work well?
-Why do you think they performed worse than what you used for your final submission?
+\section{Lessons Learned}
 
-TODO: HAns
+As mentioned above we used Visulab for scatter plots. But this program was not so handy and with Matlab it was easier to visualize essential things like the correlation of different features.
+For the features selection we also used the \texttt{lasso} function provided by Matlab. However, it performed worse than our "brute force" feature selection method. Most probably this was the case because choosing the right \texttt{lambda} heavily affects the solution.
+For solving the minimization problem we also tried the residual sum squared and conjugate gradient approach, but those two methods didn't improve our solution, so we stayed with the ridge regression.
 
 \end{document}
